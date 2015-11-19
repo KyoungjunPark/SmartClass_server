@@ -1,0 +1,13 @@
+<!doctype html>
+<title>Home</title>
+<body>
+    <ul class=entries>
+	{% for entry in entries %}
+	  <li><h2>{{entry.id}}</h2>{{entry.name|safe }}
+	{% else %}
+	<li><em>Unbelievable. No entries here so far</em></li>
+	{% endfor %}
+	</ul>
+
+</body>
+</html>
