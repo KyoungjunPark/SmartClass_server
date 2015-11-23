@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from flask import Flask, request, session, g, redirect, url_for, \
-		abort, render_template, flash, jsonify
+		abort, render_template, flash, jsonify, send_file
 import json
 from contextlib import closing
 import views
@@ -46,7 +46,7 @@ def teardown_request(exception):
 		db.close()
 
 #GET communication test
-@app.route('/test_GET', methods=['GET'])
+@app.route('/db_test', methods=['GET'])
 def test_GET():
 	g.db.execute('insert into user values(?, ?, ?, ?, ?)'
 			, [request.args.get('email'), request.args.get('password')
@@ -54,3 +54,6 @@ def test_GET():
 				, request.args.get('sex_type')])
 	g.db.commit()
 	return "good"
+@app.route('/pic_test', methods=['GET'])
+def pic_test():
+	return send_file('static/hyojoo.jpeg', mimetype='image/jpeg')
