@@ -19,9 +19,8 @@ create table notice(
 	num integer not null,
 	title text not null,
 	content text not null,
-	time date not null,
-	isSignNeed integer not null,
-	sign text
+	time text not null,
+	isSignNeed integer not null
 );
 drop table if exists token;
 create table token(
