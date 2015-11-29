@@ -17,6 +17,9 @@ app.config.update(dict(
 ))
 
 app.config.from_object(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads/'
+app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'bmp'])
+
 views.register_views(app)
 
 def connect_db():
