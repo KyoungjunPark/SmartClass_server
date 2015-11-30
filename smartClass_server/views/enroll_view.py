@@ -9,6 +9,7 @@ import os
 
 SIGN_UPLOAD_FOLDER = 'sign_images/'
 PROFILE_UPLOAD_FOLDER = 'profile_images/'
+MEMORY_UPLOAD_FOLDER = 'memory_images/'
 
 enroll_blueprint = Blueprint('enroll', __name__)
 
@@ -149,4 +150,42 @@ def enroll_profile_image():
 		g.db.commit()
 
 		return "ok", 200
-	
+
+@enroll_blueprint.route('/enroll_memory', methods=['POST'])
+@login_required
+def enroll_memory():
+	if request.method == 'POST':
+		cur = g.db.execute('select email from token where token = ?'
+				,[request.headers.get('token')])
+		g.db.commit()
+		result = cur.fetchone()
+		email = result[0]
+		
+		#board number
+		cur = g.db.execute('select count(*) from memory where email = ?'
+		,[email])
+		g.db.commit()
+		result = cur.fetchone()
+	 	board_num = result[0]
+		
+		#time set
+		now = strftime("%Y/%m/%d %H:%M")
+		print("time :" + now)
+
+		if request.form['image'] != "":
+			#create sign image file
+			filename = MEMORY_UPLOAD_FOLDER + email + "_" + str(board_num) + ".png"
+			fh = open(filename, "wb")
+			fh.write(request.form['image'].decode("base64"))
+			fh.close()
+			#insert info to sign table
+			cur = g.db.execute('insert into memory values(?,?,?,?,?)'
+					,[email, board_num, request.form['content'], filename, now])
+		else:
+			filename = None
+			#insert info to sign table
+			cur = g.db.execute('insert into memory(email, num, content, time) values(?,?,?,?)', [email, board_num, request.form['content'], now])
+		
+		g.db.commit()
+
+		return "ok", 200

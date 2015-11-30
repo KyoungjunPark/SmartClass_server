@@ -127,7 +127,74 @@ def board_sign():
 
 		data = []
 		for row in cur:
-			
 			data.append({'email_parent': row[0], 'signImage' : image_url})
+
+@board_blueprint.route('/board_memory', methods=['POST'])
+@login_required
+def board_memory():
+	error = None
+	if request.method == 'POST':
+		cur = g.db.execute('select email from token where token = ?'
+				,[request.headers.get('token')])
+		g.db.commit()
+		result = cur.fetchone()
+		email = result[0]
+
+		#check user type
+		cur = g.db.execute('select reg_type, code from user where email = ?'
+				,[email])
+		g.db.commit()
+		result = cur.fetchone()
+		reg_type = result[0]
+		code = result[1]
+
+		if reg_type != 1:
+			if code[0] == 'P':
+				#case: parent
+				cur = g.db.execute('select email from teacherCode where parent_code = ?'
+						,[code])
+				g.db.commit()
+				result = cur.fetchone()
+				email = result[0]
+			else:
+				#case: student
+				cur = g.db.execute('select email from teacherCode where student_code = ?'
+						,[code])
+				g.db.commit()
+				result = cur.fetchone()
+				email = result[0]
+
+		#get name& profilePic
+		cur = g.db.execute('select name, profile_image from user where email = ?'
+				,[email])
+		g.db.commit()
+		result = cur.fetchone()
+		name = result[0]
+		profilePic = result[1]
+
+		fh = open(profilePic, "rb")
+		profilePic_data = fh.read()
+		profilePic = profilePic_data.encode("base64")
+	
+		cur = g.db.execute('select num, content, image, time from memory where email = ?', [email])
+		g.db.commit()
+
+
+		data = []
+		for row in cur:
+			if row[2] != None:
+				fh = open(str(row[2]), "rb")
+				image_data = fh.read()
+				image = image_data.encode("base64")
+			else:
+				image = ""
+
+			data.append({ 'num' : row[0], 'content' : row[1]
+				, 'image' : image, 'time' : row[3]
+				, 'name' : name,  'profilePic' : profilePic})
+
+		print(json.dumps(data))
+
+		return json.dumps(data), 200
 
 

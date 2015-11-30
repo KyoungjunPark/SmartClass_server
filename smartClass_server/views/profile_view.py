@@ -34,6 +34,6 @@ def get_profile():
 		data = []
 		data.append({'email' : email, 'name' : name, 'reg_type' : reg_type, 'sex_type' : sex_type, 'profile_image' : profile_image})
 
-		print(data)
+		print(json.dumps(data))
 		
 		return json.dumps(data), 200

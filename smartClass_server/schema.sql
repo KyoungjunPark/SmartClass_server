@@ -37,6 +37,15 @@ create table assignment(
 	isImportant integer not null,
 	PRIMARY KEY(email, num)
 );
+drop table if exists memory;
+create table memory(
+	email text not null,
+	num integer not null,
+	content text not null,
+	image text,
+	time text not null,
+	PRIMARY KEY(email, num)
+);
 drop table if exists sign;
 create table sign(
 	email_teacher text not null,
