@@ -5,6 +5,7 @@ create table user (
 	reg_type integer not null,
 	name text not null,
 	sex_type integer not null,
+	profile_image DEFAULT 'profile_images/default.png',
 	code text
 );
 drop table if exists teacherCode;
@@ -43,7 +44,6 @@ create table sign(
 	email_parent text not null,
 	signImage text not null,
 	PRIMARY KEY(email_teacher, num, email_parent)
-
 );
 drop table if exists token;
 create table token(

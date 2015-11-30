@@ -2,6 +2,8 @@
 
 from flask import Blueprint, request, render_template, redirect, url_for, session, g
 from ..auth.commons import login_required
+import json
+
 
 profile_blueprint = Blueprint('profile', __name__)
 
@@ -16,13 +18,22 @@ def get_profile():
 		result = cur.fetchone()
 		email = result[0]
 
-		cur = g.db.execute('select reg_type, name, sex_type from user where email = ?'
+		cur = g.db.execute('select reg_type, name, sex_type, profile_image from user where email = ?'
 		,[email])
 		g.db.commit()
 		result = cur.fetchone()
+		name = result[1]
+		reg_type = result[0]
+		sex_type = result[2]
+		filename = result[3]
 
-		codes = email + "/" + result[1] + "/" + str(result[0]) + "/" + str(result[2])
-		print(codes)
+		fh = open(filename, "rb")
+		image_data = fh.read()
+		profile_image = image_data.encode("base64")
 		
-		return codes, 200
+		data = []
+		data.append({'email' : email, 'name' : name, 'reg_type' : reg_type, 'sex_type' : sex_type, 'profile_image' : profile_image})
 
+		print(data)
+		
+		return json.dumps(data), 200

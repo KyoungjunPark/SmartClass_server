@@ -5,6 +5,10 @@ from ..auth.commons import login_required
 from time import strftime
 from werkzeug import secure_filename
 import base64
+import os
+
+SIGN_UPLOAD_FOLDER = 'sign_images/'
+PROFILE_UPLOAD_FOLDER = 'profile_images/'
 
 enroll_blueprint = Blueprint('enroll', __name__)
 
@@ -25,7 +29,7 @@ def enroll_notice():
 		g.db.commit()
 		result = cur.fetchone()
 
-		board_num = result[0]
+	 	board_num = result[0]
 		
 		#time set
 		now = strftime("%Y/%m/%d %H:%M")
@@ -95,23 +99,54 @@ def enroll_sign():
 				,[request.headers.get('token')])
 		g.db.commit()
 		result = cur.fetchone()
+		email_parent = result[0]
 
+		cur = g.db.execute('select code from user where email = ?'
+				,[email_parent])
+		g.db.commit()
+		result = cur.fetchone()
+		code = result[0]
+
+		cur = g.db.execute('select email from teacherCode where parent_code = ?'
+				,[code])
+		g.db.commit()
+		result = cur.fetchone()
+		email_teacher = result[0]
+		
+		board_num = int(request.form['num'])
+
+		#create sign image file
+		filename = SIGN_UPLOAD_FOLDER + email_teacher + "_" + email_parent + "_" + str(board_num) + ".jpeg"
+		fh = open(filename, "wb")
+		fh.write(request.form['sign_image'].decode("base64"))
+		fh.close()
+
+		#insert info to sign table
+		cur = g.db.execute('insert into sign values(?,?,?,?)'
+				,[email_teacher, board_num, email_parent, filename])
+		g.db.commit()
+		
+		return "ok", 200
+
+@enroll_blueprint.route('/enroll_profile_image', methods=['POST'])
+@login_required
+def enroll_profile_image():
+	if request.method == 'POST':
+		cur = g.db.execute('select email from token where token = ?'
+				,[request.headers.get('token')])
+		g.db.commit()
+		result = cur.fetchone()
 		email = result[0]
 
-		print(len(request.form['sign_image']))
-
-		fh = open("test.jpeg", "wb")
-		fh.write(request.form['sign-image'].decode('base64'))
+		#create profile image file
+		filename = PROFILE_UPLOAD_FOLDER + email + ".png"
+		fh = open(filename, "wb")
+		fh.write(request.form['profile_image'].decode("base64"))
 		fh.close()
-		if file:
-			filename = secure_filename(file.filename)
 
-			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+		cur = g. db.execute('update user set profile_image =? where email = ?'
+				,[filename, email])
+		g.db.commit()
 
-			return redirect(url_for('enroll_sign_file', filename=filename))
-
-@enroll_blueprint.route('/enroll_sign_file', methods=['POST'])
-def enroll_sign_file():
-	return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
+		return "ok", 200
+	

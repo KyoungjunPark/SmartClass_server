@@ -12,10 +12,10 @@ def join_teacher():
 
 	if request.method == 'POST':
 		if valid_email(request.form['email']):
-			cur = g.db.execute('insert into user values(?,?,?,?,?,?)'
+			cur = g.db.execute('insert into user(email, password, reg_type, name, sex_type) values(?,?,?,?,?)'
 					,[request.form['email'],request.form['password']
 						,1 ,request.form['name']
-							, request.form.get('sex_type', type=int), None])
+							, request.form.get('sex_type', type=int)])
 			g.db.commit()
 		else:
 			error_code = 404
@@ -38,7 +38,7 @@ def join_student():
 	if request.method == 'POST':
 		if valid_code(request.form['code']):
 			if valid_email(request.form['email']):
-				cur = g.db.execute('insert into user values(?,?,?,?,?,?)'
+				cur = g.db.execute('insert into user(email, password, reg_type, name, sex_type, code) values(?,?,?,?,?,?)'
 						,[request.form['email'],request.form['password']
 							,2 ,request.form['name']
 								,int(request.form['sex_type']),request.form['code']])
@@ -66,7 +66,7 @@ def join_parent():
 	if request.method == 'POST':
 		if valid_code(request.form['code']):
 			if valid_email(request.form['email']):
-				cur = g.db.execute('insert into user values(?,?,?,?,?,?)'
+				cur = g.db.execute('insert into user(email, password, reg_type, name, sex_type, code) values(?,?,?,?,?,?)'
 						,[request.form['email'],request.form['password']
 							,3 ,request.form['name']
 								,int(request.form['sex_type']),request.form['code']])
