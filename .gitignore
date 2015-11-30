@@ -1,6 +1,6 @@
 venv/
 *.pyc
 *.py~
-sign_images/*
-memory_images/*
-profile_images/*
+sign_images/*.jpeg
+memory_images/*.png
+profile_images/*.png
