@@ -59,3 +59,17 @@ create table token(
 	email text primary key,
 	token text not null
 );
+drop table if exists gcm_id;
+create table gcm_id(
+	email_teacher text,
+	email_user text,
+	register_id text not null,
+	PRIMARY KEY(email_teacher, email_user)
+);
+drop table if exists phone_status;
+create table phone_status(
+	email_teacher text,
+	email_user text,
+	screen_status integer not null,
+	PRIMARY KEY(email_teacher, email_user)
+);

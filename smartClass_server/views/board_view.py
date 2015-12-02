@@ -56,7 +56,6 @@ def board_notice():
 				, 'time' : row[3], 'isSignNeed' : row[4]
 				, 'isImportant' : row[5], 'isSignFinished' : isSignFinished})
 	
-		print(json.dumps(data))
 
 		return json.dumps(data), 200
 
@@ -104,8 +103,6 @@ def board_assignment():
 			data.append({ 'num' : row[0], 'title' : row[1]
 				, 'content' : row[2], 'start_date' : row[3]
 				, 'end_date' : row[4],  'isImportant' : row[5]})
-
-		print(json.dumps(data))
 
 		return json.dumps(data), 200
 
@@ -192,8 +189,6 @@ def board_memory():
 			data.append({ 'num' : row[0], 'content' : row[1]
 				, 'image' : image, 'time' : row[3]
 				, 'name' : name,  'profilePic' : profilePic})
-
-		print(json.dumps(data))
 
 		return json.dumps(data), 200
 

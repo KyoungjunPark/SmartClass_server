@@ -7,6 +7,7 @@ from werkzeug import secure_filename
 import base64
 import os
 
+
 SIGN_UPLOAD_FOLDER = 'sign_images/'
 PROFILE_UPLOAD_FOLDER = 'profile_images/'
 MEMORY_UPLOAD_FOLDER = 'memory_images/'
@@ -22,7 +23,6 @@ def enroll_notice():
 				,[request.headers.get('token')])
 		g.db.commit()
 		result = cur.fetchone()
-
 		email = result[0]
 
 		cur = g.db.execute('select count(*) from notice where email = ?'
@@ -50,9 +50,10 @@ def enroll_notice():
 				,[email, board_num, request.form['title']
 					,request.form['content'], now, isSignNeed, isImportant])		
 		g.db.commit()
-
-
+		
 		return "ok", 200
+		#return redirect(url_for('gcm.send_gcm',board_type="notice"
+		#	,email=email,title=request.form['title']))
 
 @enroll_blueprint.route('/enroll_assignment', methods=['POST'])
 @login_required
@@ -88,8 +89,9 @@ def enroll_assignment():
 					,request.form['end_date'], isImportant])		
 		g.db.commit()
 
-
 		return "ok", 200
+		#return redirect(url_for('gcm.send_gcm',board_type="assignment"
+		#	,email=email,title=request.form['title']))
 
 @enroll_blueprint.route('/enroll_sign', methods=['POST'])
 @login_required
@@ -118,6 +120,10 @@ def enroll_sign():
 
 		#create sign image file
 		filename = SIGN_UPLOAD_FOLDER + email_teacher + "_" + email_parent + "_" + str(board_num) + ".jpeg"
+		
+		if not os.path.exists(SIGN_UPLOAD_FOLDER):
+			os.makedirs(SIGN_UPLOAD_FOLDER)
+
 		fh = open(filename, "wb")
 		fh.write(request.form['sign_image'].decode("base64"))
 		fh.close()
@@ -141,6 +147,10 @@ def enroll_profile_image():
 
 		#create profile image file
 		filename = PROFILE_UPLOAD_FOLDER + email + ".png"
+		if not os.path.exists(PROFILE_UPLOAD_FOLDER):
+			os.makedirs(PROFILE_UPLOAD_FOLDER)
+
+
 		fh = open(filename, "wb")
 		fh.write(request.form['profile_image'].decode("base64"))
 		fh.close()
@@ -175,6 +185,10 @@ def enroll_memory():
 		if request.form['image'] != "":
 			#create sign image file
 			filename = MEMORY_UPLOAD_FOLDER + email + "_" + str(board_num) + ".png"
+			
+			if not os.path.exists(filename):
+				os.makedirs(filename)
+
 			fh = open(filename, "wb")
 			fh.write(request.form['image'].decode("base64"))
 			fh.close()
@@ -188,4 +202,66 @@ def enroll_memory():
 		
 		g.db.commit()
 
+	return "ok", 200
+	#return redirect(url_for('gcm.send_gcm',board_type="memory"
+	#		,email=email,title=request.form['content']))
+
+
+@enroll_blueprint.route('/enroll_screen', methods=['POST'])
+@login_required
+def enroll_screen():
+	if request.method == 'POST':
+		cur = g.db.execute('select email from token where token = ?'
+				,[request.headers.get('token')])
+		g.db.commit()
+		result = cur.fetchone()
+		email = result[0]
+		email_teacher = result[0]
+		
+		#check user type
+		cur = g.db.execute('select reg_type, code from user where email = ?'
+				,[email])
+		g.db.commit()
+		result = cur.fetchone()
+		reg_type = result[0]
+		code = result[1]
+		
+		if reg_type != 1:
+			if code[0] == 'P':
+				#case: parent
+				cur = g.db.execute('select email from teacherCode where parent_code = ?'
+						,[code])
+				g.db.commit()
+				result = cur.fetchone()
+				email_teacher = result[0]
+			else:
+				#case: student
+				cur = g.db.execute('select email from teacherCode where student_code = ?'
+						,[code])
+				g.db.commit()
+				result = cur.fetchone()
+				email_teacher = result[0]
+
+		cur = g.db.execute('select count(*) from phone_status where email_teacher = ? and email_user = ?', [email_teacher, email])
+		g.db.commit()
+		result = cur.fetchone()
+		isRecordExist = result[0]
+
+		if request.form['screen_status'] == 'on':
+			if isRecordExist == 0:
+				cur = g.db.execute('insert into phone_status values(?,?,?)'
+						,[email_teacher, email, 1])
+			else:
+				cur = g.db.execute('update phone_status set screen_status = ? where email_teacher = ? and email_user = ?', [1, email_teacher, email])
+			
+		else:
+			if isRecordExist == 0:
+				cur = g.db.execute('insert into phone_status values(?,?,?)'
+						,[email_teacher, email, 0])
+			else:
+				cur = g.db.execute('update phone_status set screen_status = ? where email_teacher = ? and email_user = ?', [0, email_teacher, email])
+		
+		g.db.commit()
 		return "ok", 200
+	
+
