@@ -70,6 +70,7 @@ drop table if exists phone_status;
 create table phone_status(
 	email_teacher text,
 	email_user text,
+	isSend integer DEFAULT 0,
 	screen_status integer not null,
 	PRIMARY KEY(email_teacher, email_user)
 );

@@ -186,8 +186,8 @@ def enroll_memory():
 			#create sign image file
 			filename = MEMORY_UPLOAD_FOLDER + email + "_" + str(board_num) + ".png"
 			
-			if not os.path.exists(filename):
-				os.makedirs(filename)
+			if not os.path.exists(MEMORY_UPLOAD_FOLDER):
+				os.makedirs(MEMORY_UPLOAD_FOLDER)
 
 			fh = open(filename, "wb")
 			fh.write(request.form['image'].decode("base64"))
@@ -248,18 +248,19 @@ def enroll_screen():
 		isRecordExist = result[0]
 
 		if request.form['screen_status'] == 'on':
+			print("screen on")
 			if isRecordExist == 0:
-				cur = g.db.execute('insert into phone_status values(?,?,?)'
-						,[email_teacher, email, 1])
+				cur = g.db.execute('insert into phone_status(email_teacher, email_user, screen_status) values(?, ?,?)',[email_teacher, email, 1])
 			else:
-				cur = g.db.execute('update phone_status set screen_status = ? where email_teacher = ? and email_user = ?', [1, email_teacher, email])
+				cur = g.db.execute('update phone_status set screen_status = ? and isSend = ? where email_teacher = ? and email_user = ?', [1, 0, email_teacher, email])
 			
 		else:
+			print("screen off")
 			if isRecordExist == 0:
-				cur = g.db.execute('insert into phone_status values(?,?,?)'
+				cur = g.db.execute('insert into phone_status(email_teacher, email_user, screen_status) values(?,?,?)'
 						,[email_teacher, email, 0])
 			else:
-				cur = g.db.execute('update phone_status set screen_status = ? where email_teacher = ? and email_user = ?', [0, email_teacher, email])
+				cur = g.db.execute('update phone_status set screen_status = ?, isSend = ? where email_teacher = ? and email_user = ?', [0,0, email_teacher, email])
 		
 		g.db.commit()
 		return "ok", 200

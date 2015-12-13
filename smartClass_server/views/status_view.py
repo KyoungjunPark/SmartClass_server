@@ -3,6 +3,7 @@
 from flask import Blueprint, request, render_template, redirect, url_for, session, g
 from ..auth.commons import login_required
 import demjson
+import json
 
 status_blueprint = Blueprint('status', __name__)
 
@@ -17,15 +18,18 @@ def screen_status():
 		result = cur.fetchone()
 		email = result[0]
 
-		cur = g.db.execute('select email_user from phone_status where email_teacher = ? and screen_status = 1', [email])
+		cur = g.db.execute('select email_user from phone_status where email_teacher = ? and screen_status = 1 and isSend = 0', [email])
 		g.db.commit()
 
 		data = []
 		for row in cur:
-			eamil_user = row[0]
-			
+			email_user = row[0]
+			cur = g.db.execute('update phone_status set isSend = 1 where email_user = ?'
+					,[email_user])
+			g.db.commit()
+
 			result = cur.fetchone()
-			data.append({'email':email_user, 'status' : 'on'})
+			data.append({'email': email_user, 'status' : 'on'})
 
 
 		return json.dumps(data), 200
